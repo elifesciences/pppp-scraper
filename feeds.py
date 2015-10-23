@@ -374,6 +374,7 @@ DESCRIPTION = [
             'impact-statement': 'this.impact_statement',
             'version': 'version',
             'doi': 'this.doi',
+            'publish': ('"0"', "0", str),  # 1 or 0 means publish immediately or don't publish immediately
             'force': ('"1"', "1", str),  # overwrite if present
             'volume': ('volume', "0", str),
             'elocation-id': 'this.elocation_id',
