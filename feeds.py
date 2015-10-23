@@ -113,9 +113,10 @@ def issn_electronic(article):
     return article.journal_issn(pub_format='electronic')
 
 
-@fattrs('this as article')
-def article_full_version(article):
-    return article.publisher_id  + '.' + version(article)
+@fattrs('this as article', 'article_version as article_version')
+def article_full_version(article, article_version):
+    return article.publisher_id + '.' + article_version
+
 
 def version_from_path(file_path):
     """ E.g. file name elife-04996-v1.xml is version 1 """
@@ -128,14 +129,11 @@ def version_from_path(file_path):
         return bit.split('v')[-1]
     else:
         return None
-    
 
-@fattrs('this as article')
-def version(article):
-    if version_from_path(article.path):
-        return version_from_path(article.path)
-    else:
-        return _VERSION
+
+@fattrs('article_version as article_version')
+def version(article_version):
+    return article_version
 
 @fattrs('this as article')
 def issn_electronic(article):
@@ -376,7 +374,7 @@ DESCRIPTION = [
             'impact-statement': 'this.impact_statement',
             'version': 'version',
             'doi': 'this.doi',
-            'publish': ('"1"', "1", str),  # 1 or 0 means publish immediately or don't publish immediately
+            'publish': ('"0"', "0", str),  # 1 or 0 means publish immediately or don't publish immediately
             'force': ('"1"', "1", str),  # overwrite if present
             'volume': ('volume', "0", str),
             'elocation-id': 'this.elocation_id',
@@ -409,11 +407,12 @@ DESCRIPTION = [
     })  # ends article block
 ]
 
-def scrape(docs_dir, process=None):
+
+def scrape(docs_dir, process=None, article_version=1):
     if docs_dir is not None:
         import scraper
         mod = __import__(__name__)
-        res = scraper.scrape(mod, doc=docs_dir)
+        res = scraper.scrape(mod, doc=docs_dir, article_version=article_version)
         if process:
             res = process(res)
         if 'referenced' in res:
@@ -421,7 +420,7 @@ def scrape(docs_dir, process=None):
                 if len(res['referenced'][referenced]) == 0:
                     del res['referenced'][referenced]
         import json
-        res = json.dumps(res, indent=4, ensure_ascii = False)
+        res = json.dumps(res, indent=4, ensure_ascii=False)
         return res
 
 def main(args):
@@ -429,7 +428,7 @@ def main(args):
         print 'Usage: python feeds.py <xml [dir|file]>'
         exit(1)
     docs_dir = args[0]
-    print scrape(docs_dir).encode('utf8')
+    print scrape(docs_dir, article_version='98').encode('utf8')
 
 
 if __name__ == '__main__':
